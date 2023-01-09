@@ -1,1 +1,19 @@
 @import '~node_modules/modern-normalize/modern-normalize.css';
+
+.header {
+  background-color: #2e2ee0;
+}
+
+.container {
+  margin-right: auto;
+  margin-left: auto;
+  width: 1200px;
+  padding: 10px 20px;
+}
+
+.search-form {
+  width: 300px;
+  height: 40px;
+  display: block;
+  margin: auto;
+}
