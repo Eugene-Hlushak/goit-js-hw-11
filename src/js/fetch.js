@@ -7,65 +7,84 @@ const refs = {
 refs.input = refs.form.firstElementChild;
 
 const axios = require('axios').default;
-const API_KEY = '32716636-8a2ea718c4d85502bc83e063b';
-const BASE_URL = 'https://pixabay.com/api/';
 
 //functions
 
-function photoSearch(userRequest, page) {
-  axios
-    .get(
-      `${BASE_URL}?key=${API_KEY}&q=${userRequest}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=5`
-    )
-    .then(response => {
-      if (!response.data.total || !refs.input.value) {
-        throw onError;
-      }
-      console.log(response);
-      const images = response.data.hits;
-      return images;
-    })
-    .then(createMarkup)
-    .catch(onError);
-}
+async function photoSearch(userRequest, page) {
+  const API_KEY = '32716636-8a2ea718c4d85502bc83e063b';
+  const BASE_URL = 'https://pixabay.com/api/';
 
-function onError() {
-  Notify.failure(
-    'Sorry, there are no images matching your search query. Please try again.'
+  const response = await axios.get(
+    `${BASE_URL}?key=${API_KEY}&q=${userRequest}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=40`
   );
+
+  if (!response.data.total || !refs.input.value) {
+    throw notifications.onError;
+  }
+
+  // const images = response.data;
+  // return images
+
+  return response;
 }
 
-function createMarkup(images) {
-  const markup = images.map(
-    image => `<div class="photo-card">
-  <img src="${image.webformatURL}" alt="${image.tags}" loading="lazy" width='280'/>
+function createMarkup({ data: { totalHits, hits } }) {
+  notifications.showTotalHits(totalHits);
+  const markup = hits
+    .map(
+      ({
+        webformatURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) => `<div class="photo-card">
+  <img src="${webformatURL}" alt="${tags}" loading="lazy" width='280'/>
   <div class="info">
     <p class="info-item">
       <b>Likes</b><br>
-      ${image.likes}
+      ${likes}
     </p>
     <p class="info-item">
       <b>Views</b><br>
-      ${image.views}
+      ${views}
     </p>
     <p class="info-item">
       <b>Comments</b><br>
-      ${image.comments}
+      ${comments}
     </p>
     <p class="info-item">
       <b>Downloads</b><br>
-      ${image.downloads}
+      ${downloads}
     </p>
   </div>
 </div>`
-  );
+    )
+    .join('');
   refs.gallery.insertAdjacentHTML('beforeend', markup);
-  refs.loadMoreBtn.classList.remove('is-hidden');
+  refs.loadMoreBtn.hidden = false;
 }
 
 function clearGallery() {
   refs.gallery.innerHTML = '';
-  refs.loadMoreBtn.classList.add('is-hidden');
+  refs.loadMoreBtn.hidden = true;
 }
 
-export { refs, photoSearch, clearGallery };
+const notifications = {
+  onError() {
+    Notify.failure(
+      'Sorry, there are no images matching your search query. Please try again.'
+    );
+  },
+
+  endOfCollection() {
+    Notify.info("We're sorry, but you've reached the end of search results.");
+  },
+
+  showTotalHits(totalHits) {
+    Notify.success(`Hooray! We found ${totalHits} images.`);
+  },
+};
+
+export { refs, photoSearch, clearGallery, createMarkup, notifications };
