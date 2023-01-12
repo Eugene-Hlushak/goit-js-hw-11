@@ -8,6 +8,7 @@ import {
 
 refs.form.addEventListener('submit', onSubmit);
 refs.loadMoreBtn.addEventListener('click', loadMore);
+refs.gallery.addEventListener('click', onClickGallery);
 let page = 1;
 
 function onSubmit(e) {
@@ -26,4 +27,8 @@ function loadMore() {
     return;
   }
   photoSearch(refs.input.value, page).then(createMarkup);
+}
+
+function onClickGallery(e) {
+  e.preventDefault();
 }

@@ -1,11 +1,17 @@
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+
 const refs = {
   form: document.querySelector('#search-form'),
   gallery: document.querySelector('.gallery'),
   loadMoreBtn: document.querySelector('.load-more'),
 };
 refs.input = refs.form.firstElementChild;
-
+const lightbox = new SimpleLightbox('.gallery  a', {
+  captionsData: 'alt',
+  captionDelay: 250,
+});
 const axios = require('axios').default;
 
 //functions
@@ -33,13 +39,14 @@ function createMarkup({ data: { totalHits, hits } }) {
   const markup = hits
     .map(
       ({
+        largeImageURL,
         webformatURL,
         tags,
         likes,
         views,
         comments,
         downloads,
-      }) => `<div class="photo-card">
+      }) => `<a href='${largeImageURL}'><div class="photo-card">
   <img src="${webformatURL}" alt="${tags}" loading="lazy" width='280'/>
   <div class="info">
     <p class="info-item">
@@ -59,11 +66,12 @@ function createMarkup({ data: { totalHits, hits } }) {
       ${downloads}
     </p>
   </div>
-</div>`
+</div></a>`
     )
     .join('');
   refs.gallery.insertAdjacentHTML('beforeend', markup);
   refs.loadMoreBtn.hidden = false;
+  lightbox.refresh();
 }
 
 function clearGallery() {
