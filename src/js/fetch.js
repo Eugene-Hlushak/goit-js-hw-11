@@ -26,13 +26,13 @@ async function photoSearch(userRequest, page) {
     `${BASE_URL}?key=${API_KEY}&q=${userRequest}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=40`
   );
   if (!response.data.total || !refs.input.value) {
-    throw notifications.onError;
+    throw notifications.onError();
   }
-
+  console.log(response);
   return response;
 }
 
-function createMarkup({ data: { totalHits, hits } }) {
+function createMarkup({ data: { hits } }) {
   const markup = hits
     .map(
       ({
@@ -44,7 +44,7 @@ function createMarkup({ data: { totalHits, hits } }) {
         comments,
         downloads,
       }) => `<a href='${largeImageURL}'><div class="photo-card">
-  <img src="${webformatURL}" alt="${tags}" loading="lazy" width='280'/>
+  <img class="image" src="${webformatURL}" alt="${tags}" loading="lazy"/>
   <div class="info">
     <p class="info-item">
       <b>Likes</b><br>
@@ -104,6 +104,7 @@ function smoothScroll() {
     behavior: 'smooth',
   });
 }
+
 export {
   refs,
   photoSearch,

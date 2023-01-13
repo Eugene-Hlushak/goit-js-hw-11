@@ -19,11 +19,10 @@ function onSubmit(e) {
     photoSearch(refs.input.value, page).then(response =>
       createMarkup(response, notifications.showTotalHits(response))
     );
-  } catch {
-    notifications.onError();
+  } catch (e) {
+    console.log(e);
   }
 }
-
 function loadMore() {
   page += 1;
   if (page > 13) {
@@ -37,9 +36,7 @@ function loadMore() {
       createMarkup(response);
       smoothScroll();
     });
-  } catch {
-    notifications.onError();
-  }
+  } catch (e) {}
 }
 
 function onClickGallery(e) {
