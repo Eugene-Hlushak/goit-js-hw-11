@@ -4,6 +4,7 @@ import {
   clearGallery,
   createMarkup,
   notifications,
+  smoothScroll,
 } from './js/fetch';
 
 refs.form.addEventListener('submit', onSubmit);
@@ -14,19 +15,28 @@ let page = 1;
 function onSubmit(e) {
   e.preventDefault();
   clearGallery();
-  photoSearch(refs.input.value, page)
-    .then(createMarkup)
-    .catch(notifications.onError);
+  try {
+    photoSearch(refs.input.value, page).then(response =>
+      createMarkup(response, notifications.showTotalHits(response))
+    );
+  } catch {
+    notifications.onError();
+  }
 }
 
 function loadMore() {
   page += 1;
   if (page > 13) {
     refs.loadMoreBtn.hidden = true;
+    refs.loadMoreBtn.classList.remove('load-more');
     notifications.endOfCollection();
     return;
   }
-  photoSearch(refs.input.value, page).then(createMarkup);
+
+  photoSearch(refs.input.value, page).then(response => {
+    createMarkup(response);
+    smoothScroll();
+  });
 }
 
 function onClickGallery(e) {

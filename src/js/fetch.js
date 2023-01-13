@@ -2,17 +2,19 @@ import { Notify } from 'notiflix/build/notiflix-notify-aio';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
+const axios = require('axios').default;
+
 const refs = {
   form: document.querySelector('#search-form'),
   gallery: document.querySelector('.gallery'),
-  loadMoreBtn: document.querySelector('.load-more'),
+  loadMoreBtn: document.querySelector('.js-loadMore'),
 };
 refs.input = refs.form.firstElementChild;
+
 const lightbox = new SimpleLightbox('.gallery  a', {
   captionsData: 'alt',
   captionDelay: 250,
 });
-const axios = require('axios').default;
 
 //functions
 
@@ -23,19 +25,14 @@ async function photoSearch(userRequest, page) {
   const response = await axios.get(
     `${BASE_URL}?key=${API_KEY}&q=${userRequest}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=40`
   );
-
   if (!response.data.total || !refs.input.value) {
     throw notifications.onError;
   }
-
-  // const images = response.data;
-  // return images
 
   return response;
 }
 
 function createMarkup({ data: { totalHits, hits } }) {
-  notifications.showTotalHits(totalHits);
   const markup = hits
     .map(
       ({
@@ -69,8 +66,10 @@ function createMarkup({ data: { totalHits, hits } }) {
 </div></a>`
     )
     .join('');
+
   refs.gallery.insertAdjacentHTML('beforeend', markup);
   refs.loadMoreBtn.hidden = false;
+  refs.loadMoreBtn.classList.add('load-more');
   lightbox.refresh();
 }
 
@@ -90,9 +89,26 @@ const notifications = {
     Notify.info("We're sorry, but you've reached the end of search results.");
   },
 
-  showTotalHits(totalHits) {
+  showTotalHits({ data: { totalHits } }) {
     Notify.success(`Hooray! We found ${totalHits} images.`);
   },
 };
 
-export { refs, photoSearch, clearGallery, createMarkup, notifications };
+function smoothScroll() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
+}
+export {
+  refs,
+  photoSearch,
+  clearGallery,
+  createMarkup,
+  notifications,
+  smoothScroll,
+};
