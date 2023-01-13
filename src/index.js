@@ -32,11 +32,14 @@ function loadMore() {
     notifications.endOfCollection();
     return;
   }
-
-  photoSearch(refs.input.value, page).then(response => {
-    createMarkup(response);
-    smoothScroll();
-  });
+  try {
+    photoSearch(refs.input.value, page).then(response => {
+      createMarkup(response);
+      smoothScroll();
+    });
+  } catch {
+    notifications.onError();
+  }
 }
 
 function onClickGallery(e) {
