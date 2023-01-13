@@ -5,6 +5,8 @@ import {
   createMarkup,
   notifications,
   smoothScroll,
+  showTotalHits,
+  hideLoadMoreBtn,
 } from './js/fetch';
 
 refs.form.addEventListener('submit', onSubmit);
@@ -17,18 +19,18 @@ function onSubmit(e) {
   clearGallery();
   try {
     photoSearch(refs.input.value, page).then(response =>
-      createMarkup(response, notifications.showTotalHits(response))
+      createMarkup(response, showTotalHits(response))
     );
   } catch (e) {
     console.log(e);
   }
 }
+
 function loadMore() {
   page += 1;
   if (page > 13) {
-    refs.loadMoreBtn.hidden = true;
-    refs.loadMoreBtn.classList.remove('load-more');
-    notifications.endOfCollection();
+    hideLoadMoreBtn();
+    Notify.info("We're sorry, but you've reached the end of search results.");
     return;
   }
   try {

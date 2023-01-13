@@ -11,10 +11,7 @@ const refs = {
 };
 refs.input = refs.form.firstElementChild;
 
-const lightbox = new SimpleLightbox('.gallery  a', {
-  captionsData: 'alt',
-  captionDelay: 250,
-});
+const lightbox = new SimpleLightbox('.gallery  a');
 
 //functions
 
@@ -22,13 +19,18 @@ async function photoSearch(userRequest, page) {
   const API_KEY = '32716636-8a2ea718c4d85502bc83e063b';
   const BASE_URL = 'https://pixabay.com/api/';
 
+  if (!userRequest) {
+    throw Notify.info('Empty query has no result');
+  }
   const response = await axios.get(
     `${BASE_URL}?key=${API_KEY}&q=${userRequest}&image_type=photo&orientation=horizontal&safesearch=true&page=${page}&per_page=40`
   );
-  if (!response.data.total || !refs.input.value) {
-    throw notifications.onError();
+  if (!response.data.total) {
+    throw Notify.failure(
+      'Sorry, there are no images matching your search query. Please try again.'
+    );
   }
-  console.log(response);
+
   return response;
 }
 
@@ -68,31 +70,18 @@ function createMarkup({ data: { hits } }) {
     .join('');
 
   refs.gallery.insertAdjacentHTML('beforeend', markup);
-  refs.loadMoreBtn.hidden = false;
-  refs.loadMoreBtn.classList.add('load-more');
+  showLoadMoreBtn();
   lightbox.refresh();
 }
 
 function clearGallery() {
   refs.gallery.innerHTML = '';
-  refs.loadMoreBtn.hidden = true;
+  hideLoadMoreBtn();
 }
 
-const notifications = {
-  onError() {
-    Notify.failure(
-      'Sorry, there are no images matching your search query. Please try again.'
-    );
-  },
-
-  endOfCollection() {
-    Notify.info("We're sorry, but you've reached the end of search results.");
-  },
-
-  showTotalHits({ data: { totalHits } }) {
-    Notify.success(`Hooray! We found ${totalHits} images.`);
-  },
-};
+function showTotalHits({ data: { totalHits } }) {
+  Notify.success(`Hooray! We found ${totalHits} images.`);
+}
 
 function smoothScroll() {
   const { height: cardHeight } = document
@@ -105,11 +94,22 @@ function smoothScroll() {
   });
 }
 
+function showLoadMoreBtn() {
+  refs.loadMoreBtn.hidden = false;
+  refs.loadMoreBtn.classList.add('load-more');
+}
+
+function hideLoadMoreBtn() {
+  refs.loadMoreBtn.hidden = true;
+  refs.loadMoreBtn.classList.remove('load-more');
+}
+
 export {
   refs,
   photoSearch,
   clearGallery,
   createMarkup,
-  notifications,
+  showTotalHits,
   smoothScroll,
+  hideLoadMoreBtn,
 };
